@@ -1,0 +1,39 @@
+syntax = "proto3"
+
+package pb;
+
+message PostAccountRequest{
+
+}
+
+message PostAccountRequest{
+
+}
+
+message GetAccountRequest{
+
+}
+
+message GetAccountResponse{
+
+}
+
+message GetAccountsRequest{
+
+}
+
+message GetAccountsResponse{
+
+}
+
+service AccountService{
+    rpc PostAccountRequest(PostAccountRequest)returns(PostAccountResponse){
+    
+    }
+    rpc GetAccountRequest(GetAccountRequest)returns(GetAccountResponse){
+    
+    }
+    rpc GetAccountsRequest(GetAccountsRequest)returns(GetAccountsResponse){
+    
+    }
+}
