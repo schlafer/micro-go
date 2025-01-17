@@ -32,10 +32,10 @@ message GetAccountsResponse{
 }
 
 service AccountService{
-    rpc PostAccountRequest(PostAccountRequest)returns(PostAccountResponse){
+    rpc PostAccount (PostAccountRequest) returns (PostAccountResponse) {
     }
-    rpc GetAccountRequest(GetAccountRequest)returns(GetAccountResponse){
+    rpc GetAccount (GetAccountRequest) returns (GetAccountResponse) {
     }
-    rpc GetAccountsRequest(GetAccountsRequest)returns(GetAccountsResponse){
+    rpc GetAccounts (GetAccountsRequest) returns (GetAccountsResponse) {
     }
 }
