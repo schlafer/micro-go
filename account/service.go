@@ -21,7 +21,7 @@ type accountService struct {
 	repository Repository
 }
 
-func newService(r Repository) Service {
+func NewService(r Repository) Service {
 	return &accountService{r}
 }
 
@@ -37,7 +37,7 @@ func (s *accountService) PostAccount(ctx context.Context, name string) (*Account
 }
 
 func (s *accountService) GetAccount(ctx context.Context, id string) (*Account, error) {
-	s.repository.GetAccountByID(ctx, id)
+	return s.repository.GetAccountByID(ctx, id)
 }
 
 func (s *accountService) GetAccounts(ctx context.Context, skip uint64, take uint64) ([]Account, error) {

@@ -1,4 +1,4 @@
-module micro-go
+module github.com/schlafer/micro-go
 
 go 1.23.4
 
