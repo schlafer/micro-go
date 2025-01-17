@@ -1,7 +1,7 @@
 syntax = "proto3";
 package pb;
 
-option go_package = "github.com/schlafer/micro-go/account/pb";
+option go_package = "./"; //run in terminal inside account folder to generate pb contents: protoc --go_out=./pb --go-grpc_out=./pb account.proto
 
 message Account{
     string id = 1;
