@@ -1,8 +1,100 @@
+version: "3.7"
+
 services:
   account:
+    build:
+      context: .
+      dockerfile: ./account/app.dockerfile
+    depends_on:
+      - account_db
+    environment:
+      DATABASE_URL: postgres://schlafer:123456@account_db/schlafer?sslmode=disable
+    restart: on-failure
+    networks:
+      - elastic_network
+
   catalog:
-  graphql:
+    build:
+      context: .
+      dockerfile: ./catalog/app.dockerfile
+    depends_on:
+      - catalog_db
+    environment:
+      DATABASE_URL: http://catalog_db:9200
+    restart: on-failure
+    networks:
+      - elastic_network
+
   order:
+    build:
+      context: .
+      dockerfile: ./order/app.dockerfile
+    depends_on:
+      - order_db
+    environment:
+      DATABASE_URL: postgres://schlafer:123456@order_db/schlafer?sslmode=disable
+      ACCOUNT_SERVICE_URL: account:8080
+      CATALOG_SERVICE_URL: catalog:8080
+    restart: on-failure
+    networks:
+      - elastic_network
+
+  graphql:
+    build:
+      context: .
+      dockerfile: ./graphql/app.dockerfile
+    ports:
+      - 8000:8080
+    depends_on:
+      - account
+      - catalog
+    environment:
+      ACCOUNT_SERVICE_URL: account:8080
+      CATALOG_SERVICE_URL: catalog:8080
+      ORDER_SERVICE_URL: order:8080
+    restart: on-failure
+    networks:
+      - elastic_network
+
   account_db:
+    build:
+      context: ./account
+      dockerfile: ./db.dockerfile
+    environment:
+      POSTGRES_DB: schlafer
+      POSTGRES_USER: schlafer
+      POSTGRES_PASSWORD: 123456
+    restart: unless-stopped
+    networks:
+      - elastic_network
+
   catalog_db:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.0
+    environment:
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      xpack.security.http.ssl.enabled: "false"
+      xpack.security.transport.ssl.enabled: "false"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - elastic_network
+    restart: unless-stopped
+
   order_db:
+    build:
+      context: ./order
+      dockerfile: ./db.dockerfile
+    environment:
+      POSTGRES_DB: schlafer
+      POSTGRES_USER: schlafer
+      POSTGRES_PASSWORD: 123456
+    restart: unless-stopped
+    networks:
+      - elastic_network
+
+networks:
+  elastic_network:
+    driver: bridge
