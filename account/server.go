@@ -1,6 +1,6 @@
-//go:generate protoc ./account.proto --go_out=plugins=grpc:./pb
 package account
 
+//go:generate protoc ./account.proto --go_out=./pb --go_opt=paths=source_relative --go-grpc_out=./pb --go-grpc_opt=paths=source_relative
 import (
 	"context"
 	"fmt"
@@ -13,6 +13,7 @@ import (
 
 type grpcServer struct {
 	service Service
+	pb.UnimplementedAccountServiceServer
 }
 
 func ListenGRPC(s Service, port int) error {
@@ -21,7 +22,10 @@ func ListenGRPC(s Service, port int) error {
 		return err
 	}
 	serv := grpc.NewServer()
-	pb.RegisterAccountServiceServer(serv, &grpcServer{s})
+	pb.RegisterAccountServiceServer(serv, &grpcServer{
+		service:                           s,
+		UnimplementedAccountServiceServer: pb.UnimplementedAccountServiceServer{},
+	})
 	reflection.Register(serv)
 	return serv.Serve(lis)
 }

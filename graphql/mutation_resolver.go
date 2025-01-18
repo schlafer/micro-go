@@ -33,7 +33,9 @@ func (r *mutationResolver) CreateAccount(ctx context.Context, in AccountInput) (
 	}, nil
 }
 
+// CreateProduct
 func (r *mutationResolver) CreateProduct(ctx context.Context, in ProductInput) (*Product, error) {
+	log.Println("cre")
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
@@ -51,6 +53,7 @@ func (r *mutationResolver) CreateProduct(ctx context.Context, in ProductInput) (
 	}, nil
 }
 
+// CreateOrder
 func (r *mutationResolver) CreateOrder(ctx context.Context, in OrderInput) (*Order, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()

@@ -7,11 +7,6 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-type Service interface {
-	PostOrder(ctx context.Context, accountID string, products []OrderedProduct) (*Order, error)
-	GetOrdersForAccount(ctx context.Context, accountID string) ([]Order, error)
-}
-
 type Order struct {
 	ID         string
 	CreatedAt  time.Time
@@ -28,37 +23,39 @@ type OrderedProduct struct {
 	Quantity    uint32
 }
 
+type Service interface {
+	PostOrder(ctx context.Context, accountID string, products []OrderedProduct) (*Order, error)
+	GetOrdersForAccount(ctx context.Context, accountID string) ([]Order, error)
+}
+
 type orderService struct {
 	repository Repository
 }
 
-func NewService(r Repository) Service {
-	return &orderService{r}
+// GetOrdersForAccount implements Service.
+func (o *orderService) GetOrdersForAccount(ctx context.Context, accountID string) ([]Order, error) {
+	return o.repository.GetOrdersForAccount(ctx, accountID)
 }
 
-func (s orderService) PostOrder(
-	ctx context.Context,
-	accountID string,
-	products []OrderedProduct,
-) (*Order, error) {
-	o := &Order{
+// PostOrder implements Service.
+func (o *orderService) PostOrder(ctx context.Context, accountID string, products []OrderedProduct) (*Order, error) {
+	or := &Order{
 		ID:        ksuid.New().String(),
 		CreatedAt: time.Now().UTC(),
 		AccountID: accountID,
 		Products:  products,
 	}
-	// Calculate total price
-	o.TotalPrice = 0.0
-	for _, p := range products {
-		o.TotalPrice += p.Price * float64(p.Quantity)
+	or.TotalPrice = 0.0
+	for _, v := range products {
+		or.TotalPrice += v.Price * float64(v.Quantity)
 	}
-	err := s.repository.PutOrder(ctx, *o)
+	err := o.repository.PutOrder(ctx, *or)
 	if err != nil {
 		return nil, err
 	}
-	return o, nil
+	return or, nil
 }
 
-func (s orderService) GetOrdersForAccount(ctx context.Context, accountID string) ([]Order, error) {
-	return s.repository.GetOrdersForAccount(ctx, accountID)
+func NewService(r Repository) Service {
+	return &orderService{r}
 }

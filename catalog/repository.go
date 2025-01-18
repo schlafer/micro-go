@@ -6,11 +6,11 @@ import (
 	"errors"
 	"log"
 
-	elastic "gopkg.in/olivere/elastic.v5"
+	"github.com/olivere/elastic/v7"
 )
 
 var (
-	ErrNotFound = errors.New("Entity not found")
+	ErrNotFound = errors.New("entity not found")
 )
 
 type Repository interface {
@@ -46,24 +46,9 @@ func NewElasticRepository(url string) (Repository, error) {
 func (r *elasticRepository) Close() {
 }
 
-func (r *elasticRepository) PutProduct(ctx context.Context, p Product) error {
-	_, err := r.client.Index().
-		Index("catalog").
-		Type("product").
-		Id(p.ID).
-		BodyJson(productDocument{
-			Name:        p.Name,
-			Description: p.Description,
-			Price:       p.Price,
-		}).
-		Do(ctx)
-	return err
-}
-
 func (r *elasticRepository) GetProductByID(ctx context.Context, id string) (*Product, error) {
 	res, err := r.client.Get().
 		Index("catalog").
-		Type("product").
 		Id(id).
 		Do(ctx)
 	if err != nil {
@@ -73,7 +58,7 @@ func (r *elasticRepository) GetProductByID(ctx context.Context, id string) (*Pro
 		return nil, ErrNotFound
 	}
 	p := productDocument{}
-	if err = json.Unmarshal(*res.Source, &p); err != nil {
+	if err = json.Unmarshal(res.Source, &p); err != nil {
 		return nil, err
 	}
 	return &Product{
@@ -81,13 +66,12 @@ func (r *elasticRepository) GetProductByID(ctx context.Context, id string) (*Pro
 		Name:        p.Name,
 		Description: p.Description,
 		Price:       p.Price,
-	}, err
+	}, nil
 }
 
 func (r *elasticRepository) ListProducts(ctx context.Context, skip, take uint64) ([]Product, error) {
 	res, err := r.client.Search().
 		Index("catalog").
-		Type("product").
 		Query(elastic.NewMatchAllQuery()).
 		From(int(skip)).Size(int(take)).
 		Do(ctx)
@@ -98,7 +82,7 @@ func (r *elasticRepository) ListProducts(ctx context.Context, skip, take uint64)
 	products := []Product{}
 	for _, hit := range res.Hits.Hits {
 		p := productDocument{}
-		if err = json.Unmarshal(*hit.Source, &p); err == nil {
+		if err = json.Unmarshal(hit.Source, &p); err == nil {
 			products = append(products, Product{
 				ID:          hit.Id,
 				Name:        p.Name,
@@ -131,7 +115,7 @@ func (r *elasticRepository) ListProductsWithIDs(ctx context.Context, ids []strin
 	products := []Product{}
 	for _, doc := range res.Docs {
 		p := productDocument{}
-		if err = json.Unmarshal(*doc.Source, &p); err == nil {
+		if err = json.Unmarshal(doc.Source, &p); err == nil {
 			products = append(products, Product{
 				ID:          doc.Id,
 				Name:        p.Name,
@@ -143,10 +127,33 @@ func (r *elasticRepository) ListProductsWithIDs(ctx context.Context, ids []strin
 	return products, nil
 }
 
+func (r *elasticRepository) PutProduct(ctx context.Context, p Product) error {
+	log.Printf("Indexing product: %s, %s, %s, %.2f", p.Description, p.ID, p.Name, p.Price)
+
+	res, err := r.client.Index().
+		Index("catalog").
+		Id(p.ID).
+		BodyJson(productDocument{
+			Name:        p.Name,
+			Description: p.Description,
+			Price:       p.Price,
+		}).
+		Do(ctx)
+
+	if err != nil {
+		log.Printf("Error indexing product: %v", err)
+		return err
+	}
+
+	log.Printf("Error response from Elasticsearch: %v", res)
+
+	log.Printf("Product indexed successfully: %+v", p)
+	return nil
+}
+
 func (r *elasticRepository) SearchProducts(ctx context.Context, query string, skip, take uint64) ([]Product, error) {
 	res, err := r.client.Search().
 		Index("catalog").
-		Type("product").
 		Query(elastic.NewMultiMatchQuery(query, "name", "description")).
 		From(int(skip)).Size(int(take)).
 		Do(ctx)
@@ -157,14 +164,15 @@ func (r *elasticRepository) SearchProducts(ctx context.Context, query string, sk
 	products := []Product{}
 	for _, hit := range res.Hits.Hits {
 		p := productDocument{}
-		if err = json.Unmarshal(*hit.Source, &p); err == nil {
-			products = append(products, Product{
-				ID:          hit.Id,
-				Name:        p.Name,
-				Description: p.Description,
-				Price:       p.Price,
-			})
+		if err = json.Unmarshal(hit.Source, &p); err != nil {
+			return nil, err
 		}
+		products = append(products, Product{
+			ID:          hit.Id,
+			Name:        p.Name,
+			Description: p.Description,
+			Price:       p.Price,
+		})
 	}
 	return products, err
 }

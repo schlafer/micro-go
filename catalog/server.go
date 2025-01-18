@@ -1,4 +1,3 @@
-//go:generate protoc ./catalog.proto --go_out=plugins=grpc:./pb
 package catalog
 
 import (
@@ -14,6 +13,7 @@ import (
 
 type grpcServer struct {
 	service Service
+	pb.UnimplementedCatalogServiceServer
 }
 
 func ListenGRPC(s Service, port int) error {
@@ -22,25 +22,31 @@ func ListenGRPC(s Service, port int) error {
 		return err
 	}
 	serv := grpc.NewServer()
-	pb.RegisterCatalogServiceServer(serv, &grpcServer{s})
+	pb.RegisterCatalogServiceServer(serv, &grpcServer{
+		service:                           s,
+		UnimplementedCatalogServiceServer: pb.UnimplementedCatalogServiceServer{},
+	})
 	reflection.Register(serv)
 	return serv.Serve(lis)
 }
 
 func (s *grpcServer) PostProduct(ctx context.Context, r *pb.PostProductRequest) (*pb.PostProductResponse, error) {
+	log.Println("pos cat")
+	log.Println(r.Name, r.Description, r.Price)
 	p, err := s.service.PostProduct(ctx, r.Name, r.Description, r.Price)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return &pb.PostProductResponse{Product: &pb.Product{
-		Id:          p.ID,
-		Name:        p.Name,
-		Description: p.Description,
-		Price:       p.Price,
-	}}, nil
+	return &pb.PostProductResponse{
+		Product: &pb.Product{
+			Id:          p.ID,
+			Name:        p.Name,
+			Description: p.Description,
+			Price:       p.Price,
+		},
+	}, nil
 }
-
 func (s *grpcServer) GetProduct(ctx context.Context, r *pb.GetProductRequest) (*pb.GetProductResponse, error) {
 	p, err := s.service.GetProduct(ctx, r.Id)
 	if err != nil {
@@ -56,14 +62,13 @@ func (s *grpcServer) GetProduct(ctx context.Context, r *pb.GetProductRequest) (*
 		},
 	}, nil
 }
-
 func (s *grpcServer) GetProducts(ctx context.Context, r *pb.GetProductsRequest) (*pb.GetProductsResponse, error) {
 	var res []Product
 	var err error
 	if r.Query != "" {
 		res, err = s.service.SearchProducts(ctx, r.Query, r.Skip, r.Take)
 	} else if len(r.Ids) != 0 {
-		res, err = s.service.GetProductsByIDs(ctx, r.Ids)
+		res, err = s.service.GetProductsByID(ctx, r.Ids)
 	} else {
 		res, err = s.service.GetProducts(ctx, r.Skip, r.Take)
 	}
@@ -71,18 +76,16 @@ func (s *grpcServer) GetProducts(ctx context.Context, r *pb.GetProductsRequest) 
 		log.Println(err)
 		return nil, err
 	}
-
 	products := []*pb.Product{}
 	for _, p := range res {
-		products = append(
-			products,
-			&pb.Product{
-				Id:          p.ID,
-				Name:        p.Name,
-				Description: p.Description,
-				Price:       p.Price,
-			},
-		)
+		products = append(products, &pb.Product{
+			Id:          p.ID,
+			Name:        p.Name,
+			Description: p.Description,
+			Price:       p.Price,
+		})
 	}
-	return &pb.GetProductsResponse{Products: products}, nil
+	return &pb.GetProductsResponse{
+		Products: products,
+	}, nil
 }

@@ -1,39 +1,37 @@
 syntax = "proto3";
 package pb;
-
-option go_package = "./"; //run in terminal inside account folder to generate pb contents: protoc --go_out=./pb --go-grpc_out=./pb account.proto
-
-message Account{
-    string id = 1;
+option go_package = "/pb";
+message Account {
+    string  id  = 1;
     string name = 2;
 }
 
-message PostAccountRequest{
+message PostAccountRequest {
     string name = 1;
 }
 
-message PostAccountResponse{
+message PostAccountResponse {
     Account account = 1;
 }
 
-message GetAccountRequest{
+message GetAccountRequest {
     string id = 1;
 }
 
-message GetAccountResponse{
+message GetAccountResponse {
     Account account = 1;
 }
 
-message GetAccountsRequest{
+message GetAccountsRequest {
     uint64 skip = 1;
     uint64 take = 2;
 }
 
-message GetAccountsResponse{
+message GetAccountsResponse {
     repeated Account accounts = 1;
 }
 
-service AccountService{
+service AccountService {
     rpc PostAccount (PostAccountRequest) returns (PostAccountResponse) {
     }
     rpc GetAccount (GetAccountRequest) returns (GetAccountResponse) {
