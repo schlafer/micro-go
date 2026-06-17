@@ -11,7 +11,7 @@ require (
 	github.com/tinrab/retry v1.0.0
 	github.com/vektah/gqlparser/v2 v2.5.21
 	google.golang.org/grpc v1.69.4
-	google.golang.org/protobuf v1.36.1
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
