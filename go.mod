@@ -9,13 +9,13 @@ require (
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/segmentio/ksuid v1.0.4
 	github.com/tinrab/retry v1.0.0
-	github.com/vektah/gqlparser/v2 v2.5.21
+	github.com/vektah/gqlparser/v2 v2.5.34
 	google.golang.org/grpc v1.69.4
 	google.golang.org/protobuf v1.36.1
 )
 
 require (
-	github.com/agnivade/levenshtein v1.2.0 // indirect
+	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
