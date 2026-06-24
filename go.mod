@@ -9,7 +9,7 @@ require (
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/segmentio/ksuid v1.0.4
 	github.com/tinrab/retry v1.0.0
-	github.com/vektah/gqlparser/v2 v2.5.34
+	github.com/vektah/gqlparser/v2 v2.5.35
 	google.golang.org/grpc v1.81.1
 	google.golang.org/protobuf v1.36.11
 )

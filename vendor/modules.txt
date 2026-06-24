@@ -14,7 +14,7 @@ github.com/99designs/gqlgen/handler
 # github.com/agnivade/levenshtein v1.2.1
 ## explicit; go 1.21
 github.com/agnivade/levenshtein
-# github.com/go-viper/mapstructure/v2 v2.2.1
+# github.com/go-viper/mapstructure/v2 v2.5.0
 ## explicit; go 1.18
 github.com/go-viper/mapstructure/v2
 github.com/go-viper/mapstructure/v2/internal/errors
@@ -70,7 +70,7 @@ github.com/sosodev/duration
 # github.com/tinrab/retry v1.0.0
 ## explicit
 github.com/tinrab/retry
-# github.com/vektah/gqlparser/v2 v2.5.34
+# github.com/vektah/gqlparser/v2 v2.5.35
 ## explicit; go 1.22
 github.com/vektah/gqlparser/v2
 github.com/vektah/gqlparser/v2/ast
